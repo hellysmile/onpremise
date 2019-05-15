@@ -3,7 +3,9 @@ services:
   base:
     build: .
     environment:
-      SENTRY_SECRET_KEY: 'VERY SECRET KEY'
+      SENTRY_SECRET_KEY: ''
+      SENTRY_URL_PREFIX: 'http://127.0.0.1'
+      SENTRY_ADMIN_EMAIL: 'hellysmile@gmail.com'
       SENTRY_REDIS_HOST: redis
       SENTRY_POSTGRES_HOST: postgres
       SENTRY_RABBITMQ_HOST: rabbitmq
@@ -11,7 +13,7 @@ services:
       SENTRY_USE_SSL: 0
 
       SENTRY_WEB_PROTOCOL: uwsgi
-      SENTRY_WEB_WORKERS: 8
+      SENTRY_WEB_WORKERS: 2
       # SENTRY_EMAIL_HOST: smtp
     volumes:
       - ./data/sentry:/var/lib/sentry/files
@@ -26,7 +28,7 @@ services:
       - elasticsearch
       # - smtp
     ports:
-      - '9000:9000'
+      - 9000:9000
 
   static:
     extends: base
@@ -40,7 +42,7 @@ services:
       SENTRY_WEB_PROTOCOL: http
       SENTRY_WEB_WORKERS: 1
     ports:
-      - '9001:9000'
+      - 9001:9000
 
   cron:
     extends: base
@@ -54,7 +56,7 @@ services:
 
   worker:
     extends: base
-    command: run worker -c 8
+    command: run worker -c 2
     links:
       - redis
       - postgres
@@ -63,24 +65,24 @@ services:
       # - smtp
 
   redis:
-    image: redis:3.2
+    image: redis:5.0.4
     ports:
-      - '6379:6379'
+      - 6379:6379
     volumes:
       - ./data/redis:/data
 
   postgres:
     image: postgres:9.5
     ports:
-      - '5432:5432'
+      - 5432:5432
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
 
   rabbitmq:
-    image: rabbitmq:3.6-management
+    image: rabbitmq:3.7.14-management
     ports:
-      - '15672:15672'
-      - '5672:5672'
+      - 15672:15672
+      - 5672:5672
     environment:
       RABBITMQ_NODENAME: rabbit@localhost
       RABBITMQ_ERLANG_COOKIE: 'cookie'
@@ -88,19 +90,27 @@ services:
       - ./data/rabbitmq:/var/lib/rabbitmq
 
   elasticsearch:
-    image: elasticsearch:5.2
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.7.2
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
     ports:
-      - '9200:9200'
+      - 9200:9200
     volumes:
       - './data/elasticsearch:/usr/share/elasticsearch/data'
 
   nginx:
-    image: nginx:1.12
+    image: nginx:1.15.12
     links:
       - web
       - static
     ports:
-      - '80:80'
+      - 80:80
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
     command: [nginx, '-g', 'daemon off;']

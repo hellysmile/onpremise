@@ -1,6 +1,5 @@
 import os
 
-from elasticsearch import Elasticsearch
 from sentry.conf.server import *  # noqa
 from sentry.utils.types import Bool
 
@@ -18,12 +17,6 @@ DATABASES = {
             'autocommit': True,
         },
     },
-}
-
-es = Elasticsearch([os.environ['SENTRY_ELASTICSEARCH_HOST'] + ':9200'])
-SENTRY_NODESTORE = 'sentry_elastic_nodestore.ElasticNodeStorage'
-SENTRY_NODESTORE_OPTIONS = {
-    'es': es,
 }
 
 SENTRY_USE_BIG_INTS = True
@@ -44,10 +37,6 @@ SENTRY_OPTIONS.update({
         },
     },
 })
-
-INSTALLED_APPS = list(INSTALLED_APPS)
-INSTALLED_APPS.append('sentry_elastic_nodestore')
-INSTALLED_APPS = tuple(INSTALLED_APPS)
 
 CACHES = {
     'default': {
@@ -103,7 +92,9 @@ SENTRY_WEB_OPTIONS = {
 # SENTRY_OPTIONS['mail.username'] = ''
 # SENTRY_OPTIONS['mail.port'] = 25
 # SENTRY_OPTIONS['mail.use-tls'] = False
-# SENTRY_OPTIONS['mail.from'] = 'sentry@ocean.io'
+# SENTRY_OPTIONS['mail.from'] = ''
 SENTRY_OPTIONS['mail.backend'] = 'dummy'
 
 SENTRY_OPTIONS['system.secret-key'] = os.environ['SENTRY_SECRET_KEY']
+SENTRY_OPTIONS['system.url-prefix'] = os.environ['SENTRY_URL_PREFIX']
+SENTRY_OPTIONS['system.admin-email'] = os.environ['SENTRY_ADMIN_EMAIL']
