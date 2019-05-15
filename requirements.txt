@@ -1,3 +1,4 @@
-django-redis<4
+django-redis
 django-redis-sessions-fork
 librabbitmq
+sentry_elastic_nodestore

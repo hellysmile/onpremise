@@ -1,4 +1,4 @@
-FROM sentry:9.1.1
+FROM sentry:8.15
 
 COPY requirements.txt /tmp
 RUN set -x \
